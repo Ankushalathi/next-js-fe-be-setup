@@ -1,0 +1,1029 @@
+import React from "react";
+import {
+    Container,
+    Box,
+    // Customizable Area Start
+    Theme, withStyles, Grid,
+    Typography, MenuItem, ListItemIcon, Paper, Drawer,
+    Hidden,
+    Dialog,
+    styled,
+    RadioGroup,
+    Radio,
+    FormControlLabel,
+    Checkbox,
+    TextField,
+    Button,
+    FormHelperText
+    // Customizable Area End
+} from "@material-ui/core";
+// Customizable Area Start
+import { GoogleMap, Marker } from "@react-google-maps/api";
+
+import JobActionsController, { Props, Visit } from "./JobActionsController.web";
+import withCommonStyles from "../../../components/src/withCommonStyles.web";
+import withRequestStyles from "../../RequestManagement/src/RequestStyles.web";
+import CloseIcon from '@material-ui/icons/Close';
+import { DashboardSideBar } from "../../dashboard/src/DashboardSideBar.web";
+import { StyledRoot } from "../../dashboard/src/utility.web";
+import CreationProcess from "../../RequestManagement/src/CreationProcess.web";
+import { convertToQuote, editIcon } from "../../RequestManagement/src/assets";
+import CustomerDetails from "../../RequestManagement/src/CustomerDetails.web";
+import CustomerModal from "../../RequestManagement/src/CustomerModal.web";
+import DateTimeScheduling from "./DateTimeScheduling.web";
+import JobsCalender from "./JobsCalender.web";
+import CustomTeamMember from "../../../components/src/CustomTeamMember.web"
+import InternalNotesAttachements from "../../RequestManagement/src/InternalNotesAttachements.web";
+import ClearIcon from '@material-ui/icons/Clear';
+import CachedIcon from '@material-ui/icons/Cached';
+import { calendar, deleteIcon, downloadIcon, emailIcon, invoiceIcon, leftArrow, rightArrow } from "./assets";
+import ProductServices from "../../QuoteManagement/src/ProductService.web";
+import PriceSectionWeb from "../../QuoteManagement/src/PriceSection.web";
+import { withSnackbar } from "../../../components/src/toastweb";
+import EmailModal from "./EmailModal.web";
+import DeleteModel from "../../RequestManagement/src/DeleteModal.web";
+import JobPdf from "../../saveaspdf/src/JobPdf.web";
+import LoadingBackdrop from "../../../components/src/LoadingBackdrop";
+import { ArcheiveButton, CancelButton, ContainedButton, CustomizedTextField, OutlinedButton, MoreActionStyledMenu } from "../../../components/src/CustomizableComponents.web";
+import ContentDrawer from "./ContentDrawer.web";
+import { backIconMobile } from "../../CustomisableUserProfiles/src/assets";
+import { goBack } from "../../../components/src/CommonFunction";
+import AddCircleIcon from '@material-ui/icons/AddCircle';
+import { dropDownArrow } from "../../ProjectReporting/src/assets";
+export const StyledBoxRow = withStyles({
+    root: {
+        cursor: "pointer",
+        "&:hover": {
+            backgroundColor: "lightgrey !important",
+
+        },
+    }
+})(Box);
+import { withTranslation } from "react-i18next";
+// Customizable Area End
+
+
+export class JobEdit extends JobActionsController {
+    constructor(props: Props) {
+        super(props);
+        // Customizable Area Start
+        // Customizable Area End
+    }
+
+    // Customizable Area Start
+
+
+    manageJobConvertedLocation = (type: boolean) => {
+        const { classes, t } = this.props
+        return (
+            <>
+                    {type &&
+                        <Grid container direction="row" justifyContent="flex-end">
+                            <Grid item xs={12} md={1}>
+                                {this.state.drawerStatus ?
+                                    <Paper elevation={2} data-test-id="drawer_close" onClick={this.handleDrawerClose} className={classes.jobPaper}>
+                                        {localStorage.getItem("lang")==='ar'?<img src={leftArrow} width="17px" height={"10px"} />:<img src={rightArrow} width="17px" height={"10px"} />}
+                                    </Paper>
+                                    :
+                                    <Paper elevation={2} data-test-id="drawer_open" onClick={this.handleDrawerOpen} className={classes.jobPaper}>
+                                        {this.state.selectedLanguage==='en'?<img src={leftArrow} width="17px" height={"10px"} />:<img src={rightArrow} width="17px" height={"10px"} />}
+                                    </Paper>
+                                }
+                            </Grid>
+                            {this.state.drawerStatus &&
+                                <Grid item xs={12} md={11} className={classes.jobDrawerLayout}>
+                                    <Drawer
+                                        elevation={2}
+                                        className={classes.drawer}
+                                        variant="persistent"
+                                        anchor="right"
+                                        open={this.state.drawerStatus}
+                                        classes={{
+                                            paper: classes.drawerPaper,
+                                        }}
+                                    >
+                                        <Grid container direction="row">
+                                            <ContentDrawer
+                                                details={this.state.details}
+                                                modeType={this.props.navigation?.history?.location.state?.convertedType}
+                                                t={this.props.t}
+                                            />
+
+                                        </Grid>
+                                    </Drawer>
+                                </Grid>
+                            }
+                        </Grid>}
+                        <Typography 
+                            variant="subtitle1" 
+                            className={ this.state.drawerStatus && type ?
+                                `${classes.titleHeading26} ${classes.mb_10} ${classes.mt_129}`
+                            : `${classes.titleHeading26} ${classes.mb_10} ${classes.mt_29}`}
+                        > {t('invoice.location')}
+                        </Typography>
+                        <div style={{direction:localStorage.getItem('lang')==='ar'?'ltr':'rtl'}}>
+                            <GoogleMap
+                                mapContainerStyle={webStyle.CreateCustmapContainerStyle}
+                                center={this.state.defaultLocation}
+                                zoom={5}
+                                data-test-id="mapComponent"
+                                onLoad={(map) => {
+                                    this.onMapLoad(map);
+                                }}
+                                options={{
+                                    disableDefaultUI: false,
+                                    streetViewControl: false,
+                                    mapTypeControl: false,
+                                    fullscreenControl: false,
+                                    zoomControl:false
+                                }}
+                            >
+                    <div>
+                    <Button data-test-id = "currentlocation" style={{ backgroundColor: "transparant", border: "none", width: "100px", height: '30px', position: "absolute", top: '290px'}} onClick={() =>this.getcurentLocation()}></Button>
+                    </div>
+                                {this.state.getCustomerPlace && (
+                                    <Marker position={this.state.getCustomerPlace} />
+                                )}
+                            </GoogleMap>
+                            </div>
+
+            </>
+        )
+    }
+    jobBottomButtons = (type: boolean, jobdetails: any) => {
+        const { classes, t } = this.props
+        return (
+            <Grid container className={`${classes.flexDirection} ${classes.mt_1}`}>
+                <Grid item xs={12} sm={6}>
+                    <Box style={webStyle.cancelButtonContainer} className={classes.direction}>
+
+                            {this.state.isJobEdit &&
+                                <>
+                                    <CancelButton variant="outlined"
+                                        data-test-id="cancelButton"
+                                        onClick={this.editJobStatus}>
+                                        <Typography variant='subtitle2' className={`${classes.buttonText} ${classes.lineHeight}`}>{t('invoice.button.cancel')}</Typography>
+                                    </CancelButton>
+                                    {jobdetails?.attributes?.status != "cancelled" &&
+                                        <ArcheiveButton variant="outlined" data-test-id="archeive_button"
+                                            onClick={this.handleOpenJobDeleteDailog}>
+                                            <Typography variant='subtitle2' className={`${classes.buttonText} ${classes.lineHeight}`}>{t('jobs.button.cancelJob')}</Typography>
+                                        </ArcheiveButton>}
+                                </>}
+                    </Box>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <Grid container direction="row" alignItems="center" justifyContent="flex-end" className={classes.flexDirection}>
+                            {this.state.isJobEdit ?
+                                <OutlinedButton variant="outlined"
+                                    data-test-id="updateButton"
+                                    className={`${classes.mr_1} ${classes.ml_1} ${classes.mt_1}`}
+                                    onClick={this.updateJobBtn}>
+                                    <Typography variant='subtitle2' className={`${classes.buttonText} ${classes.lineHeight}`}>{t('jobs.button.updateJob')}</Typography>
+                                </OutlinedButton>
+                                :
+                                <>
+                                    {jobdetails?.attributes?.status != "cancelled" &&
+                                        <OutlinedButton data-test-id="editButton"
+                                            aria-label="editButton"
+                                            variant="outlined"
+                                            className={`${classes.mr_1} ${classes.ml_1} ${classes.mt_1}`}
+                                            onClick={this.handleRequestEdit}>
+                                            <Typography variant='subtitle2' className={`${classes.buttonText} ${classes.lineHeight}`}>{t('invoice.button.edit')}</Typography>
+                                        </OutlinedButton>
+                                    }
+                                </>
+                            }
+                        <ContainedButton
+                            aria-controls="customized-menu"
+                            aria-haspopup="true"
+                            variant="contained"
+                            color="primary"
+                            onClick={this.handleOpenSaveMore}
+                            data-test-id="openMoreInfo"
+                            data-testid='openMoreInfo'
+                        >
+                            <Typography variant='subtitle2' className={`${classes.buttonText} ${classes.lineHeight}`}>
+                                {t('invoice.button.moreAction')}
+                            </Typography>
+                            <img
+                                style={this.state.anchorEl ?
+                                    { ...webStyle.dropDownArrowIcon, transform: "rotate(180deg)" } :
+                                    webStyle.dropDownArrowIcon}
+                                src={dropDownArrow}
+                                alt=""
+                            />
+                        </ContainedButton>
+                        <MoreActionStyledMenu
+                            id="customized-menu"
+                            anchorEl={this.state.anchorEl}
+                            keepMounted
+                            open={Boolean(this.state.anchorEl)}
+                            onClose={this.handleCloseSaveMore}
+                            data-test-id="moreinfo"
+                        >
+                            <div className={classes.iconLayout}>
+                                <ClearIcon onClick={this.handleCloseSaveMore} />
+                            </div>
+                            {this.jobActionButtons(type, jobdetails)}
+                        </MoreActionStyledMenu>
+                    </Grid>
+                </Grid>
+            </Grid>
+        )
+    }
+    jobActionButtons = (type: boolean, jobdetails: any) => {
+        const { classes, t } = this.props
+        const converted = this.props.navigation?.history?.location?.state?.convertedType
+        return (<>
+            {!type &&  jobdetails?.attributes?.status != "completed" && <MenuItem>
+                <ListItemIcon style={webStyle.width_35}>
+                    <img src={emailIcon} width="20px" height="20px" />
+                </ListItemIcon>
+                <Typography variant="body1" data-test-id="email_modal" onClick={this.openEmailModal} className={classes.popupBtnText} >{t('jobs.email')}</Typography>
+            </MenuItem>}
+            {type &&
+                <>{converted != "QuoteTo" &&
+
+                    <MenuItem>
+                        <ListItemIcon style={webStyle.width_35}>
+                            <img src={convertToQuote} width="20px" height="20px" />
+                        </ListItemIcon>
+                        <Typography variant="body1" data-test-id="provideQuote" onClick={this.handleQuoteToJob} className={classes.popupBtnText} >{t('jobs.quote')}</Typography>
+                    </MenuItem>
+                }
+                </>}
+            <MenuItem>
+                <ListItemIcon style={webStyle.width_35}>
+                    <img src={downloadIcon} width="20px" height="20px" />
+                </ListItemIcon>
+                <Typography variant="body1" data-test-id="job_pdf" className={classes.popupBtnText}
+                    onClick={this.handlePdfOpen}
+                >{t('invoice.menuLabel.pdf')}</Typography>
+            </MenuItem>
+            {!type &&
+                <>
+                    {this.state.jobCompleteData?.attributes?.status != "completed" &&
+                        jobdetails?.attributes?.status != "cancelled" && jobdetails?.attributes?.status != "completed" && <MenuItem>
+                        <ListItemIcon style={webStyle.width_35}>
+                            <img src={invoiceIcon} width="20px" height="20px" />
+                        </ListItemIcon>
+                        <Typography variant="body1" className={classes.popupBtnText} data-test-id="generate_invoice" onClick={() => this.reopen('saveMoreMarkAsComplete')}>{t('Calendar.markAsCompleted')}</Typography>
+                    </MenuItem>}
+
+                </>
+            }
+            {!type &&
+                <>
+                    {jobdetails?.attributes?.status === "completed" && <>
+                        <MenuItem>
+                            <ListItemIcon style={webStyle.width_35}>
+                                <img src={invoiceIcon} width="20px" height="20px" />
+                            </ListItemIcon>
+                            <Typography variant="body1" data-test-id="generate_invoice"
+                                className={classes.popupBtnText}
+                                onClick={this.generateInvoice}>
+                                {t('jobs.invoice')}
+                            </Typography>
+                        </MenuItem>
+                        <MenuItem>
+                            <ListItemIcon style={webStyle.width_35}>
+                                <CachedIcon style={{color:'rgb(73 73 193)'}} />
+                            </ListItemIcon>
+                            <Typography variant="body1" className={classes.popupBtnText} onClick={() => this.reopen('reopen')}> {t('jobs.reopen')}</Typography>
+                        </MenuItem></>}
+
+                </>
+            }
+            {this.state.jobCompleteData?.attributes?.status === "completed" &&
+                <MenuItem>
+                    <ListItemIcon style={webStyle.width_35}>
+                        <CachedIcon style={{ color: 'rgb(73 73 193)' }} />
+                    </ListItemIcon>
+                    <Typography variant="body1" className={classes.popupBtnText}
+                        onClick={() => this.reopen('reopen')}>
+                        {t('jobs.reopen')}
+                    </Typography>
+                </MenuItem>
+            }
+        </>
+        )
+    }
+
+    renderVisitDialog = () => {
+
+        const { visitDialogOpen, selectedVisit,siteDetails, internalNotes, selectedLanguage, jobConvertedFiles, internalAttachments, jobEditedFiles, recurringJobData, selectedRadio, isJobEdit, jobForm, singleJobDetails, anchorElMore } = this.state;
+        const { classes, t } = this.props;
+        const StyledBox = styled(Box)({
+            width: '50%',
+            '@media only screen and (max-width: 600px)': {
+                width: '100%'
+            }
+        });
+
+        const StyledTitleBox = styled(Box)({
+            width: '50%',
+            display: 'flex',
+            gap: '8px',
+            borderRight: '1px solid #D8D8D8',
+            paddingLeft: '8px',
+            '@media only screen and (max-width: 467px)': {
+                width: '100%',
+                borderRight: 'none',
+                paddingLeft: '0px'
+            }
+        });
+
+        const StyledFormControlLabel = styled(FormControlLabel)({
+            border: '1px solid #A0A0A0',
+            borderRadius: '8px',
+            padding: "1px 19px 1px 10px",
+            margin: '0px',
+            '& .MuiRadio-colorSecondary.Mui-checked': {
+                color: '#05037A'
+            },
+            '& .MuiRadio-root': {
+                color: '#05037A'
+            },
+            '@media only screen and (max-width: 530px)': {
+                // flexWrap: "wrap",
+                width: "165px",
+                display: "flex",
+                marginBottom: "10px",
+                // justifyContent: "center",
+                "&:nth-last-child(2) ": {
+                    width: "200px",
+                  },
+                  "&:nth-last-child(1) ": {
+                    width: "200px",
+                  }
+            },
+            '@media only screen and (max-width: 377px)': {
+                padding :"1px 10px 1px 10px"
+            }
+        });
+
+        return (
+            <Dialog
+                fullWidth={true}
+                maxWidth='sm'
+                open={visitDialogOpen}
+                onClose={this.handleVisitDialogClose}
+                aria-labelledby="max-width-dialog-title"
+            >
+                <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
+                    <Typography className={classes.visiterLabel}>{t('jobs.label.visits')}</Typography>
+                    <CloseIcon onClick={this.handleVisitDialogClose} style={{ cursor: 'pointer' }} />
+                </Box>
+                <Box style={{ display: 'flex', flexWrap: 'wrap', padding: '0px 24px' }}>
+                    <StyledBox>
+                        <Typography className={classes.visiterName}>{siteDetails.site_name}</Typography>
+                        <Typography className={classes.siteAddress}>{siteDetails.site_address}</Typography>
+                    </StyledBox>
+                    <StyledBox>
+                        <Typography className={classes.visiterName}>Client Name </Typography>
+                        <Typography className={classes.siteAddress}>{singleJobDetails.attributes?.custmoer_name}</Typography>
+                    </StyledBox>
+                </Box>
+                <Box style={{ display: 'flex', flexWrap: 'wrap', padding: '24px', borderBottom: '1px solid #A0A0A0' }}>
+                    <StyledTitleBox>
+                        <img src={calendar} className={classes.calenderStyle} />
+                        <Box>
+                            <Typography className={classes.recurringJobStyle}> {this.convertDate(selectedVisit.attributes?.start_date)}</Typography>
+                            <Typography className={classes.recurringJobStyle}>{recurringJobData.frequency}</Typography>
+                        </Box>
+                    </StyledTitleBox>
+                    <StyledTitleBox className={classes.styledTitleBox}>
+                        <Typography className={classes.recurringJobStyle}>#</Typography>
+                        <Box>
+                            <Typography className={classes.recurringJobStyle}>{t('jobs.scheduling.productsService')}</Typography>
+                            <Typography className={classes.jobFrequencyStyle}>{recurringJobData.frequency}</Typography>
+                            <Typography  className={classes.jobFrequency}>{recurringJobData.frequency}</Typography>
+                        </Box>
+                    </StyledTitleBox>
+                </Box>
+                <Box className={classes.boxStyle}>
+                    <RadioGroup className={classes.RadioBtnStyle} value={selectedRadio} onChange={this.handleRadioChange}>
+                        <StyledFormControlLabel value="Information" control={<Radio />} label={t('suppliers.information')} />
+                        <StyledFormControlLabel value="Product/Services" control={<Radio />} label={t('Product/Services')} />
+                        <StyledFormControlLabel value="Notes" control={<Radio />} label={t('suppliers.notes')} />
+                    </RadioGroup>
+                </Box>
+                <Box className={classes.jobStyleContent}>
+                    {selectedRadio === "Information" && <Box className={classes.jobTextContentStyle}>
+                        <StyledBox className={classes.jobTextContent}>
+                            <Typography className={classes.jobsStyle}>{t('creationProcess.job')}</Typography>
+                            <Typography className={classes.jobsTitleStyle}>{jobForm.jobTitle}</Typography>
+                        </StyledBox>
+                        <StyledBox className={classes.jobTextContent}>
+                            <Typography className={classes.jobsStyle}>{t('Calendar.label.team')}</Typography>
+                            {singleJobDetails?.attributes?.employees.map((item: any) => (
+                                <Typography className={classes.employessStyle}>{item.name }</Typography>
+                            ))}
+                        </StyledBox>
+                    </Box>}
+                    {selectedRadio === "Product/Services" && (singleJobDetails?.attributes?.products?.data.length  ?
+                        <Box style={{ display: 'flex', flexDirection: 'column', padding: '16px', border: '1px solid #A0A0A0', borderRadius: '8px', gap: '24px' }}>
+                            <Box style={{ width: '100%', display: 'flex', gap: '16px' }}>
+                                <Box style={{ maxWidth: '450px', width: '100%' }}>
+                                    <Typography style={{ fontSize: '18px', fontWeight: 400, fontFamily: 'Rubic', color: '#626262' }}># Product</Typography>
+                                    <TextField
+                                        variant="outlined"
+                                        style={{ maxWidth: '450px', width: '100%' }}
+                                        disabled={true}
+                                        value={singleJobDetails?.attributes?.products?.data?.[0]?.attributes.product_name || ''}
+                                    />
+                                </Box>
+                                <Box style={{ maxWidth: '100px', width: '100%' }}>
+                                    <Typography style={{ fontSize: '18px', fontWeight: 400, fontFamily: 'Rubic', color: '#626262' }}>Quantity</Typography>
+                                    <TextField
+                                        variant="outlined"
+                                        disabled={true}
+                                        style={{ maxWidth: '100px', width: '100%' }}
+                                        value={singleJobDetails?.attributes?.products?.data?.[0].attributes.quantity || ''}
+                                    />
+                                </Box>
+                            </Box>
+                            <TextField
+                                multiline
+                                rows={4}
+                                disabled={true}
+                                style={{ width: '100%' }}
+                                variant="outlined"
+                                value={singleJobDetails?.attributes?.products?.data[0].attributes.description || ''}
+                            />
+                            <Box style={{ display: 'flex', flexWrap: 'wrap', width: '100%', gap: '16px' }}>
+                                <Box style={{ maxWidth: '255px', width: '100%' }}>
+                                    <Typography style={{ fontSize: '18px', fontWeight: 400, fontFamily: 'Rubic', color: '#626262' }}>Unit Price($)</Typography>
+                                    <TextField
+                                        variant="outlined"
+                                        disabled={true}
+                                        value={singleJobDetails?.attributes?.products?.data[0]?.attributes.unit_price || ''}
+                                    />
+                                </Box>
+                                <Box style={{ maxWidth: '255px', width: '100%' }}>
+                                    <Typography style={{ fontSize: '18px', fontWeight: 400, fontFamily: 'Rubic', color: '#626262' }}>Total($)</Typography>
+                                    <TextField
+                                        variant="outlined"
+                                        disabled={true}
+                                        value={singleJobDetails?.attributes?.products?.data?.[0].attributes.total || ''}
+                                    />
+                                </Box>
+                            </Box>
+                        </Box> :
+                        <Box padding={"1rem"}><Typography variant="subtitle1" align="center">{t('ProductService.noDataFound')}</Typography></Box>)}
+                    {selectedRadio === "Notes" && <Box style={{ display: 'flex', flexWrap: 'wrap', padding: '12px', border: '1px solid #A0A0A0', borderRadius: '8px' }}>
+                        <Grid item xs={12}>
+                            <InternalNotesAttachements
+                                editStatus={isJobEdit}
+                                type="edit"
+                                internalNotes={internalNotes}
+                                editedinternalAttachements={jobEditedFiles}
+                                internalAttachments={internalAttachments}
+                                convertedFiles={jobConvertedFiles}
+                                getEditedFiles={this.getJobEditedFiles}
+                                getConvertedFiles={this.getJobConvertedFiles}
+                                t={t}
+                                updateInternalNotes={this.updateInternalNotes}
+                                languageSelected={selectedLanguage}
+
+                                updateInternalAttachments={this.updateInternalAttachments} />
+                            <Typography component={'div'} className={classes.errorText}>{this.state.isJobErrorFormData.internalNotes}</Typography>
+                        </Grid>
+                    </Box>}
+                </Box>
+
+                <Box style={{ display: 'flex', flexWrap: 'wrap', padding: '24px', justifyContent: 'space-between' }}>
+                    <Button
+                        onClick={this.handleOpenMore}
+                        style={{
+                            width: '100%', maxWidth: '202px', height: '67px', fontSize: '22px', fontFamily: 'Rubic', textTransform: 'none', border: '1px solid #1C18AF', color: '#1C18AF', borderRadius: '10px'
+                        }}>
+                        {t('invoice.button.moreAction')}
+                    </Button>
+                    <MoreActionStyledMenu
+                        id="customized-menu"
+                        anchorEl={anchorElMore}
+                        keepMounted
+                        open={Boolean(anchorElMore)}
+                        onClose={this.handleCloseMore}
+                        data-test-id="moreinfo"
+                    >
+                        
+                        <MenuItem>
+                            <ListItemIcon style={webStyle.width_35}>
+                                <img src={editIcon} width="20px" height="20px" />
+                            </ListItemIcon>
+                            <Typography variant="body1" data-test-id="provideQuote" onClick={this.handleCloseMore} className={classes.popupBtnText} >{t('suppliers.edit')}</Typography>
+                            <div className={classes.iconLayout}>
+                            <ClearIcon onClick={this.handleCloseMore} style={{ cursor: 'pointer' }} />
+                        </div>
+                        </MenuItem>
+                        <MenuItem>
+                            <ListItemIcon style={webStyle.width_35}>
+                                <img src={emailIcon} width="20px" height="20px" />
+                            </ListItemIcon>
+                            <Typography variant="body1" data-test-id="provideQuote" onClick={this.handleEmailOpen} className={classes.popupBtnText} >{t('suppliers.emailReminder')}</Typography>
+                        </MenuItem>
+                        <MenuItem>
+                            <ListItemIcon style={webStyle.width_35}>
+                                <img src={deleteIcon} width="20px" height="20px" />
+                            </ListItemIcon>
+                            <Typography variant="body1" data-test-id="provideQuote" onClick={() => this.deleteVisit()} className={classes.popupBtnText} >{t('notifications.delete')}</Typography>
+                        </MenuItem>
+                    </MoreActionStyledMenu>
+                    <Button
+                       onClick={() => this.MarkasCompleted()}
+                        style={{
+                            width: '100%', maxWidth: '261px', height: '67px', fontSize: '22px', fontFamily: 'Rubic', textTransform: 'none', background: '#1C18AF', color: '#FFFFFF', borderRadius: '10px'
+                        }}>
+                        {t('Calendar.markAsCompleted')}
+                    </Button>
+                </Box>
+            </Dialog>
+        )
+    }
+
+    renderVisits = (t: ((key: string) => string)) => {
+        return (this.state.jobScheduling === "recurring_job" || this.state.jobScheduling === "وظيفة متكررة") &&
+            <Grid item xs={12} md={9}>
+                <Box display={"flex"} flexDirection={"row"} alignItems={"center"} justifyContent={"space-between"}>
+                    <Typography variant="subtitle1">{t('jobs.label.visits')}</Typography>
+                    <Typography style={webStyle.visitNewText} variant="body1">{t('jobs.label.new')} <AddCircleIcon color="action" /> </Typography>
+                </Box>
+                <Box display={"flex"} borderRadius={"8px"} border={"1px solid lightgray"} flexDirection={"column"}>
+                    {this.state.jobVisits && this.state.jobVisits.length > 0 ?
+                        <>
+                            <Box padding={"0.5rem"}> <Typography variant="body2" style={webStyle.visitMonthlyText}>{this.state.recurringJobData.frequency}</Typography></Box>
+                            <Box height={"313px"} overflow={"scroll"} gridGap={"0.5rem"}>
+                                {this.state.jobVisits.map((item: Visit) => {
+                                    return (
+                                        <label>
+                                            <StyledBoxRow display={"flex"} flexDirection={"row"} marginBottom={"0.5rem"} onClick={() => this.handleVisitDialogOpen(item)} padding={"0 0.5rem"} justifyContent={"space-between"} alignItems={"center"}>
+                                                <Box display={"flex"} gridGap={"0.5rem"} alignItems={"center"} flexDirection={"row"}>
+                                                    <Checkbox style={webStyle.visitCheckbox} checked={item.attributes.markascompleted} />
+                                                    <Typography variant="body1">{this.convertDate(item.attributes && item.attributes?.start_date)}</Typography>
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="body1">{t('Calendar.assignTo')} {item.attributes && item.attributes.employees[0]?.name}</Typography>
+                                                </Box>
+                                            </StyledBoxRow>
+                                            <input type="checkbox" style={{ display: "none" }} />
+                                        </label>
+                                    )
+                                })}
+                            </Box>
+                        </>
+                        : <Box padding={"1rem"}><Typography variant="subtitle1" align="center">{t('ProductService.noDataFound')}</Typography></Box>
+                    }
+                </Box>
+
+            </Grid>
+    }
+    // Customizable Area End
+
+    render() {
+        const { classes, t } = this.props;
+        const convertedType = this.props?.navigation.history?.location?.state?.convertedType;
+        const type = convertedType === "RequestTo" || convertedType == "QuoteTo";
+        return (
+            // Customizable Area Start
+            <>
+                <DashboardSideBar history={undefined} oldProps={undefined} permissions={undefined} {...this.props} navMenuItem={t('dashboardNavbar.jobs')} active={5} active1={false} active2={false} />
+                <StyledRoot languageSelected={this.state.selectedLanguage}>
+                    <Box sx={{ marginTop: "8rem" }} >
+                        <Container maxWidth={false}>
+                            <Grid item xs={12} className={classes.pogressBar}>
+                                <CreationProcess active={2} t={t} selectLanguage={this.state.selectedLanguage}/>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Grid container justifyContent="flex-start" spacing={1}>
+                                    <Grid item xs={12}>
+                                        <Grid container direction="row" spacing={2} alignItems="center">
+                                            <Hidden smUp>
+                                                <Grid item>
+                                                    <img
+                                                        data-test-id='editJob_backIcon'
+                                                        src={backIconMobile} width={12} height={24} onClick={() => goBack(this.props.navigation)} alt="" />
+                                                </Grid>
+                                            </Hidden>
+                                        </Grid>
+                                    </Grid>
+                                    <Grid item xs={12} md={8}>
+                                        <Grid container justifyContent="flex-start" spacing={2} >
+                                            {this.state.isJobEdit ?
+                                                <>
+                                                    <Grid item xs={12}>
+                                                        <Typography variant="subtitle1"
+                                                            className={classes.titleHeading26}>
+                                                            {t('jobs.tableRow.title')}
+                                                        </Typography>
+                                                    </Grid>
+                                                    <Grid xs={12}>
+                                                        <CustomizedTextField
+                                                            variant="outlined"
+                                                            className={classes.requestInput}
+                                                            onChange={this.handleJobChange}
+                                                            name={"jobTitle"}
+                                                            value={this.state.jobForm.jobTitle}
+                                                            data-test-id="update_change"
+                                                            inputProps={{"data-testid":"update_change"}}                                          
+                                                        />
+                                                         <FormHelperText id="standard-weight-helper-text" style={{color:"red"}} className={`${classes.errorText} ${classes.display}`}>{this.state.jobForm.jobTitle ==='' || (this.state.jobForm.jobTitle && this.state.jobForm.jobTitle.length > 40) ? this.state.isJobErrorFormData.title : ''}</FormHelperText>
+                                                    </Grid>
+                                                </> :
+                                                <Grid item xs={12}>
+                                                    <Grid item container alignItems="center">
+                                                        <Typography variant="subtitle1" className={classes.titleHeading26} data-testid="jobTitle">
+                                                            {this.state.jobForm?.jobTitle}
+                                                        </Typography>
+                                                        <img src={editIcon}
+                                                            style={{
+                                                                marginLeft: "10px",
+                                                                width: "20px",
+                                                                height: "20px"
+
+                                                            }} />
+                                                    </Grid>
+                                                </Grid>
+
+                                            }
+                                            
+                                            
+                                        </Grid>
+
+                                    </Grid>
+                                    <Grid container direction="row" spacing={2}>
+                                    <Grid item xs={12} md={8} className={classes.gutterTop2}>
+                                            <CustomerDetails
+                                                crudStatus={"edit"}
+                                                modeType={t('jobs.jobFor')}
+                                                editStatus={this.state.isJobEdit}
+                                                details={this.state.customerDetails?.attributes}
+                                                siteDetails={this.state.siteDetails}
+                                                dailogOpen={this.state.isJobEdit && this.handleOpenDialog}
+                                                t={t}
+
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            {this.manageJobConvertedLocation(type)}
+                                        </Grid>
+                                    </Grid>
+                                    {!type && <><Grid item xs={12} md={8}>
+                                        <DateTimeScheduling
+                                            editStatus={this.state.isJobEdit}
+                                            oneOffJobDetails={this.state.JobTypeDetails}
+                                            getOneOffJobDetails={this.getOneOffJobDetails}
+                                            getActiveJobs={this.getActiveJobs}
+                                            getRecurringJobDetail={this.getRecurringJobDetail}
+                                            getJobType={this.state.jobScheduling}
+                                            recurringJobData={this.state.recurringJobData}
+                                            t={t}
+                                            languageSelected={this.state.selectedLanguage}
+                                            isErrorFormData={this.state.isJobErrorFormData}
+                                            jobType={this.state.jobType}
+                                        />
+                                    </Grid>
+                                        <Grid item xs={12} md={4} />
+                                    </>
+    
+    }
+                                    {type && <Grid item xs={12} >
+                                                <DateTimeScheduling
+                                                    isErrorFormData={this.state.isJobErrorFormData}
+                                                    editStatus={this.state.isJobEdit}
+                                                    oneOffJobDetails={this.state.JobTypeDetails}
+                                                    getOneOffJobDetails={this.getOneOffJobDetails}
+                                                    getActiveJobs={this.getActiveJobs}
+                                                    getRecurringJobDetail={this.getRecurringJobDetail}
+                                                    getJobType={this.state.jobScheduling}
+                                                    t={t}
+                                                    languageSelected={this.state.selectedLanguage}
+                                                    recurringJobData={this.state.recurringJobData}
+                                                    jobType={this.state.jobType}
+                                                />
+                                            </Grid>
+                                            }
+                                            {type && <>
+                                                <Grid item xs={12} md={10} >
+                                                    <JobsCalender
+                                                        t={t}
+                                                        employeeDetails={this.state.employeeDetails}
+                                                        sechudlingJob={this.state.JobTypeDetails}
+                                                        getEmployeeData={this.state.getEmployeeData}
+                                                        getJobData={this.state.getJobData}
+                                                        jobEditform={this.state.jobForm} id={""} mode={""} navigation={undefined} history={undefined} getEmployeeDetail={undefined} jobEditStatus={undefined} employeeName={""} siteId={""} />
+                                                </Grid>
+                                            </>
+                                            }
+                                    <Grid item xs={12} md={8}>
+                                        <Grid container>
+                                            <Typography variant="subtitle1" className={classes.titleHeading26}>
+                                                {t('Calendar.label.assignTeamMember')}
+                                            </Typography>
+                                        </Grid>
+                                        <CustomTeamMember
+                                            getEmployeeData={this.state.getEmployeeData}
+                                            values={this.state.teamMember}
+                                            name="employee_id"
+                                            data-test-id='teamMember'
+                                            selectLanguage={this.state.selectedLanguage}
+                                            onChange={this.handleChangeTeam}
+                                            onClose={this.getJob}
+                                            disabled={!this.state.isJobEdit}
+                                            t={t}
+                                            onClick={(employeeId: string) => this.handleRemoveTeam(employeeId)}
+                                        />
+                                    </Grid>
+                                    {!type && <>
+                                        <Grid item xs={12} md={9}>
+                                            <JobsCalender
+                                                t={t}
+                                                employeeDetails={this.state.employeeDetails}
+                                                sechudlingJob={this.state.JobTypeDetails}
+                                                getEmployeeData={this.state.getEmployeeData}
+                                                getJobData={this.state.getJobData}
+                                                jobEditform={this.state.jobForm} navigation={undefined} id={""} history={undefined} mode={""} getEmployeeDetail={undefined} jobEditStatus={undefined} employeeName={""} siteId={""} />
+                                        </Grid>
+                                        <Grid item xs={12} md={3} />
+                                    </>
+                                    }
+                                    <Grid item xs={12} md={8}>
+                                        <ProductServices
+                                            type="edit"
+                                            productServices={this.state.productServices}
+                                            productData={this.state.productData}
+                                            handleProductChange={this.handleChangeProductInput}
+                                            handleProductDocument={this.handleProductDocument}
+                                            addField={this.addField}
+                                            handleChangeSearchInput={this.handleChangeSearchInput}
+                                            removeField={this.removeField}
+                                            completed={this.state.completed}
+                                            files={this.state.files}
+                                            progress={this.state.progress}
+                                            handleRemoveFile={this.handleRemoveFile}
+                                            handleChangeProductFiles={this.handleChangeProductFiles}
+                                            value={this.state.productServices}
+                                            isEditable={this.state.isJobEdit}
+                                            isErrorFormData={this.state.isJobErrorFormData}
+                                            history={this.props.navigation.history}
+                                            currency={this.state.currencySym}
+                                            t={t}
+                                            languageSelected={this.state.selectedLanguage}
+                                        />
+
+                                    </Grid>
+                                    <Grid item xs={12}
+                                        md={8}
+                                    >
+                                        <Typography className={classes.titleHeading26}
+                                            variant="subtitle1">
+                                            {t('suppliers.price')}
+                                        </Typography>
+                                        <PriceSectionWeb
+                                            data={this.state.productServices}
+                                            priceSectionData={this.state.priceSectionData}
+                                            emptyPriceSectionData={this.emptyPriceSectionDataInvoice}
+                                            selectTaxRate={this.selectTaxRateInvoice}
+                                            handlePriceSection={this.handlePriceSection}
+                                            isEditable={this.state.isEditable}
+                                            calculateTotal={this.calculateTotal}
+                                            getSubTotal={this.getSubTotal}
+                                            handleChange={this.handleChange}
+                                            handleTransactionDate={this.handleTransactionDate}
+                                            onClose={this.handlePaymentModalClose}
+                                            discountDialog={this.state.discountDialog}
+                                            handleDiscountDialogOpen={this.handleDiscountDialogOpen}
+                                            collectedPaymentForm={this.state.collectedPaymentForm}
+                                            handleChangePaymentMethodRef={this.handleChangePaymentMethodRef}
+                                            handleCollectionPaymentModal={this.handleCollectionPaymentModal}
+                                            handleCollectionPaymentClose={this.handleCollectionPaymentClose}
+                                            currency={this.state.currencySym}
+                                            selectCurrency={this.selectCurrency}
+                                            selectedLang={this.state.selectedLanguage}
+                                            selectedCurrency={this.state.selectCurrency}
+                                            handlePay_balence={this.handlePay_balance}
+                                            handleCollected={this.handleCollected}
+                                        />
+                                    </Grid>
+                                    {this.renderVisits(t)}
+                                    {this.renderVisitDialog()}
+                                    <Grid item xs={12} 
+                                        md={8} className={classes.gutterTop3}>
+                                        <InternalNotesAttachements
+                                            editStatus={this.state.isJobEdit}
+                                            type="edit"
+                                            internalNotes={this.state.internalNotes}
+                                            editedinternalAttachements={this.state.jobEditedFiles}
+                                            internalAttachments={this.state.internalAttachments}
+                                            convertedFiles={this.state.jobConvertedFiles}
+                                            getConvertedFiles={this.getJobConvertedFiles}
+                                            getEditedFiles={this.getJobEditedFiles}
+                                            updateInternalNotes={this.updateInternalNotes}
+                                            t={t}
+                                            languageSelected={this.state.selectedLanguage}
+                                            updateInternalAttachments={this.updateInternalAttachments} />
+                                        <Typography component={'div'} className={classes.errorText}>{this.state.isJobErrorFormData.internalNotes}</Typography>
+                                    </Grid>
+
+                                    <Grid item xs={12} className={classes.margin20}>
+                                        {this.jobBottomButtons(type, this.state.singleJobDetails)}
+                                    </Grid>
+
+                                </Grid>
+
+                            </Grid>
+
+
+                        </Container>
+                    </Box>
+
+                </StyledRoot>
+                {
+                    this.state.customerDailog &&
+                    //@ts-ignore
+                    <CustomerModal
+                        type='editJob'
+                        requestId={this.state.singleJobDetails?.id}
+                        open={this.state.customerDailog}
+                        saveMapData={this.saveMapData}
+                        getCustomerDetails={this.getCustomerDetails}
+                        getSiteDetails={this.getJobSiteDetails}
+                        getCustomerSelectedStatus={this.getCustomerSelectedStatus}
+                        selectedCustomerButtonStatus={this.selectedJobCustomerButtonStatus}
+                        data-test-id="searchCustomer"
+                        t={t}
+                        customerDetails={this.state.customerDetails.attributes}
+                        siteDetails={this.state.siteDetails} navigation={this.props.navigation} id={""} history={this.props.navigation.history} crudStatus={""} location={this.props.navigation.history.location} />
+                }
+                {
+                    this.state.sendEmailDailog &&
+                    <EmailModal
+                        type={t('dashboard.jobs')}
+                        open={this.state.sendEmailDailog}
+                        jobDetails={this.state.singleJobDetails}
+                        closeEmailModal={this.closeEmailModal}
+                        customerEmail={this.state.customerDetails.attributes?.email}
+                        t={t}
+                    />
+
+                }
+                {
+                    this.state.deleteDailogStatus &&
+                    <DeleteModel
+                        deleteType={t('jobs.deleteJob')}
+                        subType={t('jobs.deleteJobDes')}
+                        open={this.state.deleteDailogStatus}
+                        onClose={this.handleCloseJobDeleteDailog}
+                        handleDelete={this.deleteJobSoft}
+                        t={t}
+                    />
+                }
+                {this.state.jobPdfDailog
+                    &&
+                    <JobPdf
+                        type="Job"
+                        jobId={this.state.singleJobDetails?.id}
+                        openPdf={this.state.jobPdfDailog}
+                        closePdf={this.handlePdfclose}
+                        currency={this.state.currencySym}
+                        t={t}
+                    />}
+
+                <LoadingBackdrop
+                    loading={this.state.jobLoading}
+                />
+            </>
+
+            // Customizable Area End
+        );
+    }
+}
+
+// Customizable Area Start
+export const editStyles = (theme: Theme) => ({
+    pogressBar: {
+        marginBottom: "25px"
+    },
+
+    iconLayout: {
+        display: "flex",
+        justifyContent: "flex-end",
+        alignItems: "center",
+        margin: "0 0 0 auto"
+    },
+    visiterLabel: {
+        fontSize: '30px', fontWeight: 600, color: '#34313A'
+    },
+    visiterName: {
+        fontSize: '24px', fontWeight: 600, color: '#34313A', textTransform: "capitalize" as const
+    },
+    siteAddress  : {
+        fontSize: '18px', fontWeight: 500,color: '#A3A3A3', marginTop: "5px",
+        '@media only screen and (max-width: 453px)': {
+            fontSize: '15px',
+        }
+    },
+    recurringJobStyle: {
+        fontSize: '18px', fontWeight: 500, color: '#262626'
+    },
+    calenderStyle: {
+        width: "19px",
+        height: "22px"
+    },
+    jobFrequencyStyle: {
+        fontSize: '16px', fontWeight: 500, color: '#414042', marginTop: "10px",
+        '@media only screen and (max-width: 467px)': {
+            marginTop: "0px"
+        }
+    },
+    jobFrequency: {
+        fontSize: '14px',color: '#A0A0A0'
+    },
+    styledTitleBox: {
+        borderRight: 'none !important',
+        '@media only screen and (max-width: 467px)': {
+            justifyContent: "start",
+            marginTop: "16px"
+        }
+    },
+    boxStyle: {
+        display: 'flex', flexWrap: 'wrap' as const, padding: '34px 24px 0px 24px'
+    },
+    RadioBtnStyle: {
+        flexDirection: 'row' as const, justifyContent: 'space-evenly', width: '100%',
+        '@media only screen and (max-width: 467px)': {
+            flexDirection: "column",
+            paddingTop: "16px"
+        }
+    },
+    jobsStyle: {
+        fontSize: '18px', fontWeight: 500,  color: '#A0A0A0' 
+    },
+    jobsTitleStyle: {
+        fontSize: '18px', fontWeight: 400, color: '#1C18AF', textTransform: "capitalize" as const
+    },
+    employessStyle: {
+        fontSize: '18px', fontWeight: 400,  color: '#A0A0A0', textTransform: "capitalize" as const
+    },
+    jobStyleContent :{
+        padding: '24px',
+            width: "90%",
+            margin: "0px auto",
+            '@media only screen and (max-width: 630px)': {
+                width: "94%",
+            },
+            '@media only screen and (max-width: 530px)': {
+                width: "100%",
+            }           
+    },
+    jobTextContent: {
+        '@media only screen and (max-width: 370px)': {
+            display: "flex",
+            justifyContent: "space-around"
+        }
+    },
+    jobTextContentStyle: {
+        display: 'flex', padding: '12px', border: '1px solid #A0A0A0', borderRadius: '8px' ,
+        '@media only screen and (max-width: 370px)': {
+            flexWrap: 'wrap' as const
+        }
+    }
+});
+
+const webStyle = {
+    CreateCustmapContainerStyle: {
+        width: "100%",
+        minHeight: "320px",
+        borderRadius: "10px",
+    },
+    width_35:{
+        minWidth:"35px"
+    },
+    dropDownArrowIcon: {
+        marginLeft:"15px",
+        width: "16px",
+        height: "8px"
+    },
+    cancelButtonContainer: {
+        display: "flex",
+        gap: "1rem"
+    },
+    visitNewText: {
+        display: "flex",
+        alignItems: "center" as const,
+        gap: "0.5rem"
+    },
+    visitMonthlyText: {
+        color: "#1c18af", borderBottom: "1px solid #1c18af"
+    },
+    visitCheckbox: {
+        padding: 0, color: "#1c18af"
+    }
+}
+const JobEditStyles = withCommonStyles(JobEdit)
+const GeJobRequestStyles = withRequestStyles(JobEditStyles)
+const EditJobToaster = withSnackbar(GeJobRequestStyles)
+export default withTranslation()(withStyles(editStyles)(EditJobToaster));
+// Customizable Area End

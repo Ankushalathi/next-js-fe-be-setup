@@ -1,0 +1,43 @@
+Feature: JobEdit
+
+  Scenario: User navigates to JobEdit update page
+        Given I am a User click JobEdit
+        When I navigate to the JobEdit fill data
+        Then JobEdit will open and show data of customer   
+
+ Scenario: User navigates to jobs edit page
+        Given I am a User loading  jobs edit page
+        When user click on jobs edit
+        Then User can edit data
+
+
+Scenario: User navigates to jobs edit page with none permisstion
+        Given I am a User loading  jobs edit page with none permisstion
+        When user click on jobs with none permisstion
+        Then User can not see job edit page data
+
+Scenario: User navigates to jobs edit page with View only
+        Given I am a User loading  jobs edit page with View only
+        When user click on jobs with View only
+        Then User can see job page list
+
+ Scenario: User processes recurring job data and appends to job body all
+            Given I am on the JobEdit page with a recurring job
+            When I process and append recurring job data
+            Then All recurring job data should be appended correctly
+
+	Scenario: User processes recurring job data and appends to job body
+        Given I am on the JobEdit page with a recurring job
+        When I process and append recurring job data
+        Then All recurring job data should be appended correctly
+
+    Scenario: User processes recurring job data and appends to job body for createJob
+        Given I am on the JobEdit page with a recurring job
+        When I process and append recurring job data
+        Then All recurring job data should be appended correctly
+
+    Scenario: handleVisitDialogOpen should set visitDialogOpen to true and update selectedVisit
+    Scenario: formatDate should return formatted date string
+    Scenario: should reset the collectedPaymentForm state and trigger createJob if validation passes
+
+

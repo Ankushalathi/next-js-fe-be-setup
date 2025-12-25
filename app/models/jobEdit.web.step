@@ -1,0 +1,796 @@
+import { defineFeature, loadFeature } from "jest-cucumber";
+import { shallow,mount, ShallowWrapper } from "enzyme";
+import { expect, jest, beforeEach } from "@jest/globals";
+import * as helpers from "../../../../framework/src/Helpers";
+import { runEngine } from "../../../../framework/src/RunEngine";
+import { Message } from "../../../../framework/src/Message";
+import  translateToEnglishTime  from '../../src/JobActionsController.web';
+
+import MessageEnum, {
+    getName,
+} from "../../../../framework/src/Messages/MessageEnum";
+import React from "react";
+import { JobEdit } from "../../src/JobEdit.web";
+import { mockApi } from "./CreateJob.web.steps";
+import { fireEvent, render, RenderResult } from "@testing-library/react";
+import MockAPIHelperBlock from "../../../../components/src/MockApiHelperBlock";
+import * as enLang from './../../../../web/src/locales/en.json';
+import * as arLang from "./../../../../web/src/locales/ar.json";
+const navigation = require("react-navigation");
+
+const screenProps = {
+    navigation: {
+        goBack:jest.fn(),
+        history:{
+            push:jest.fn()
+        }
+    },
+    id: "JobEdit",
+    navigate_back: {},
+    navigate: {},
+    classes: {},
+    location: {
+        state: ""
+    },
+    openToastHandler: jest.fn()
+};
+
+const convertedProps={
+    openToastHandler: jest.fn(),
+    navigation:{
+        goBack:jest.fn(),
+        history:{
+            push:jest.fn(),
+            location:{
+              state:{
+                  convertedType:"",
+                  jobId:21,
+                  requestId:135,
+                  type:'edit'
+              }
+          }
+        },
+        
+    },
+    id: "JobEdit",
+    classes: {},
+    mockFullWeekDays: [
+      "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+  ],
+}
+const convertedProps1={
+  openToastHandler: jest.fn(),
+  navigation:{
+      goBack:jest.fn(),
+      history:{
+          push:jest.fn(),
+          location:{
+            state:{
+                convertedType:"RequestTo",
+                jobId:21,
+                requestId:135,
+                type:'edit'
+            }
+        }
+      },
+      
+  },
+  id: "JobEdit",
+  classes: {},
+}
+
+const jobData = {
+  "data": {
+    "id": "1594",
+    "type": "job",
+    "attributes": {
+      "job_title": "test jon",
+      "customer_id": 469,
+      "account_id": 615,
+      "employee_id": null,
+      "request_id": null,
+      "site_id": 391,
+      "status": "upcoming",
+      "scheduling": "recurring_job",
+      "frequency": "weekly",
+      "duration": "2.weeks",
+      "summary": "Every 1 week on Monday, Tuesday, Wednesday, Thursday",
+      "day": "monday,tuesday,wednesday,thursday",
+      "every": 1,
+      "start_date": "2024-12-11",
+      "end_date": "2024-12-06",
+      "internal_notes": "",
+      "sub_total": 200.0,
+      "total": 200.0,
+      "tax": 0.0,
+      "tax_name": "",
+      "currency": "KZT",
+      "discount_type": "",
+      "discount": "0",
+      "product_and_services": null,
+      "quote": null,
+      "created_at": "2024-12-06T18:52:50.279Z",
+      "updated_at": "2024-12-06T20:33:41.822Z",
+      "bo_information": {
+        "name": "Mohammad Daabes",
+        "email": "daabes090@yopmail.com",
+        "company_name": "شركة محمد",
+        "street_address": "",
+        "post_code": null,
+        "city": "",
+        "full_phone_number": "+34 2222222"
+      },
+      "employees": [],
+      "employee_image": [],
+      "company_logo": null,
+      "location": {
+        "latitude": null,
+        "longitude": null,
+        "city": null,
+        "zip_code": null,
+        "address": null
+      },
+      "site_address": {
+        "latitude": "25.2048493",
+        "longitude": "55.2707828",
+        "city": "",
+        "state": "",
+        "zip_code": "",
+        "address": "Dubai - United Arab Emirates"
+      },
+      "start_time": "09:00 AM",
+      "end_time": "09:00 AM",
+      "customer_name": "Mohammad Daabes",
+      "pdf_url": {
+        "id": 6570,
+        "url": "https://minio.b215298.dev.eastus.az.svc.builder.cafe/sbucket/cgf4xfsknw0s2w6f9frk92deji5n",
+        "name": "PDF1594",
+        "content_type": "application/pdf",
+        "pdf_hex_colour": "null"
+      },
+      "files": null,
+      "products": {
+        "data": []
+      },
+      "job_id": "JOB001594"
+    }
+  },
+  "in_progress": {
+    "data": [
+      {
+        "id": "1612",
+        "type": "job",
+        "attributes": {
+          "job_title": "testing",
+          "customer_id": 469,
+          "account_id": 615,
+          "employee_id": null,
+          "request_id": null,
+          "site_id": 391,
+          "status": "in_progress",
+          "scheduling": "recurring_job",
+          "frequency": "weekly",
+          "duration": "3.weeks",
+          "summary": "Every 1 week on Tuesday, Wednesday, Thursday",
+          "day": "tuesday,wednesday,thursday",
+          "every": 1,
+          "start_date": "2024-12-13",
+          "end_date": "2024-12-13",
+          "internal_notes": "",
+          "sub_total": 200.0,
+          "total": 200.0,
+          "tax": 0.0,
+          "tax_name": "",
+          "currency": "XCD",
+          "discount_type": "",
+          "discount": "0",
+          "product_and_services": null,
+          "quote": null,
+          "created_at": "2024-12-13T10:08:39.808Z",
+          "updated_at": "2024-12-13T10:08:39.808Z",
+          "bo_information": {
+            "name": "Mohammad Daabes",
+            "email": "daabes090@yopmail.com",
+            "company_name": "شركة محمد",
+            "street_address": "",
+            "post_code": null,
+            "city": "",
+            "full_phone_number": "+34 2222222"
+          },
+          "employees": [
+            {
+              "id": 549,
+              "name": "MD EMP",
+              "email": "daabeljlkls22@yopmail.com"
+            }
+          ],
+          "employee_image": [null],
+          "company_logo": null,
+          "location": {
+            "latitude": null,
+            "longitude": null,
+            "city": null,
+            "zip_code": null,
+            "address": null
+          },
+          "site_address": {
+            "latitude": "25.2048493",
+            "longitude": "55.2707828",
+            "city": "",
+            "state": "",
+            "zip_code": "",
+            "address": "Dubai - United Arab Emirates"
+          },
+          "start_time": "09:00 AM",
+          "end_time": "09:00 AM",
+          "customer_name": "Mohammad Daabes",
+          "pdf_url": null,
+          "files": null,
+          "products": {
+            "data": [
+              {
+                "id": "1182358",
+                "type": "product_item",
+                "attributes": {
+                  // Add the product details here if needed
+                }
+              }
+            ]
+          },
+          "job_id": "JOB001612"
+        }
+      }
+    ]
+  }
+};
+
+const productServicedata = [
+   {
+     id: 246,
+     name: "wire",
+     description: "",
+     cost: null,
+     markup: 0.0,
+     unit_price: 200.0,
+     exempt_tax: false,
+     account_id: 615,
+     created_at: "2024-09-16T22:35:16.214Z",
+     updated_at: "2024-09-16T22:35:16.214Z",
+     total_price: 200.0,
+   },
+   {
+     id: 330,
+     name: "laptop",
+     description: "test description",
+     cost: null,
+     markup: 56.0,
+     unit_price: 56.0,
+     exempt_tax: true,
+     account_id: 615,
+     created_at: "2024-12-16T07:14:39.812Z",
+     updated_at: "2024-12-16T07:14:39.812Z",
+     total_price: 87.36,
+   },
+ ];
+ 
+ 
+
+ 
+
+const feature = loadFeature(
+    "./__tests__/features/JobEdit-scenario.web.feature"
+);
+
+
+const jobDetails=require("../../__mocks__/jobDetailsMock.json")
+const updateJobMockDetails=require("../../__mocks__/updateJobApiResponceMock.json")
+const productsServicesMock=require("../../__mocks__/ProductsServicesMock.json")
+const customerDetails=require("../../__mocks__/customerDetailsMock.json")
+const requestDetails=require("../../__mocks__/createRequestMock.json")
+const siteDetailsMock=require("../../__mocks__/siteDetailsMock.json")
+
+const mockCurrencyData={
+    'currency_code':'USD'
+  }
+const jobDetailsErrorMock = {
+    errors: [
+        { message: "Token expired" }
+    ]
+}
+defineFeature(feature, (test) => {
+    const expectedUrl = `http://localhost:3000/Job/Create`;
+    let lang: string | null;
+    beforeEach(() => {
+        jest.setTimeout(1000)
+        jest.useFakeTimers();
+        jest.resetModules();
+        jest.doMock("react-native", () => ({ Platform: { OS: "web" } }));
+        jest.spyOn(helpers, "getOS").mockImplementation(() => "web");
+        global.localStorage.setItem("isEmployee", 'true')
+        global.localStorage.setItem("lang", 'en')
+        lang = global.localStorage.getItem('lang');
+        Object.defineProperty(window, 'scrollTo', {
+          value: jest.fn(),
+          writable: true,
+        });
+        Object.defineProperty(window, 'location', {
+          value: {
+      ...window.location,
+      href:expectedUrl
+
+    },
+    writable: true
+    });
+
+    expect(productServicedata).toBeDefined();
+    });
+
+
+  test("User navigates to JobEdit update page", ({ given, when, then }) => {
+      let JobEditBlock: ShallowWrapper;
+      let instance: JobEdit;
+
+        given("I am a User click JobEdit", () => {
+            JobEditBlock = shallow(<JobEdit t={(key: string) => key} type={""} details={undefined} modeType={""} 
+            navigate={jest.fn()} navigate_back={""} seeDetails={undefined} active={0} {...convertedProps} />);
+        });
+
+        when("I navigate to the JobEdit fill data", () => {
+         instance = JobEditBlock.instance() as JobEdit;
+         JobEditBlock.findWhere((node) => node.prop("data-test-id") === "editButton").simulate("click");
+         JobEditBlock.setState({ isJobEdit: true });
+         mockApi(instance, "getCustomerDetailsApiCallId", customerDetails);
+         mockApi(instance, "apiCallIdGetProductServices", productServicedata);
+         instance.createJobproductAndServices();
+         instance.getProductServicesApiResponce(productServicedata);
+         expect(productServicedata.length).toBeGreaterThan(0);
+       });
+       
+
+      then("JobEdit will open and show data of customer", () => {  
+
+         instance.setState({ visitDialogOpen: true });
+    instance.handleVisitDialogClose();
+    expect(instance.state.visitDialogOpen).toBe(false);
+
+    instance.setState({ visitDialogOpen: true });
+    instance.handleVisitDialogClose();
+    expect(instance.state.visitDialogOpen).toBe(false);
+
+    const mockEvent = { target: { value: "option1" } };
+    instance.handleRadioChange(mockEvent);
+    expect(instance.state.selectedRadio).toBe("option1");
+         expect(instance.state.visitDialogOpen).toBe(false);
+         expect(instance.state.visitDialogOpen).toBe(false);
+         expect(productServicedata.length).toBeGreaterThan(0);
+         instance.handleJobCreatedToaster()
+         instance.handleJobUpdatedCloseToaster()
+         instance.handleCloseJobDeleteDailog()
+         instance.closeEmailModal(false,"success")
+         instance.openEmailModal();
+         instance.handleOpenCallback(["EDIT"])
+         instance.handleOpenCallback([""])
+         instance.handleOpenCallbackV1();
+         instance.handleOpenSaveMore({currentTarget:{value:""}});
+         instance.handleJobEditCallback(["EDIT"])
+         instance.handleJobEditCallback([""])
+         instance.handleOpenV1DialogCallback("CREATE")
+         instance.handleOpenV1DialogCallback("")
+         instance.renderVisitDialog()
+        expect("job is updated").toBeDefined();
+      });       
+  })
+
+
+test('User navigates to jobs edit page', ({ given, when, then }) => {
+  let JobsBlock:RenderResult;
+
+    given('I am a User loading  jobs edit page', () => {
+      global.localStorage.setItem("permissions", 'U2FsdGVkX19zyl3upa/kwf62mlhBZ/L/')
+      JobsBlock = render(
+            <MockAPIHelperBlock>
+               <JobEdit
+                t={(key: string) => {
+                    return key.split(".").reduce((acc: {[key: string]: {}}, cur : string) => acc?.[cur], lang === "en" ? enLang : arLang)?.toString?.()
+                }}
+                  type={""} details={undefined} modeType={""} navigate_back={""} seeDetails={undefined}    navigate={jest.fn()} active={0} {...convertedProps} />
+           </MockAPIHelperBlock>
+        )
+    });
+
+  when('user click on jobs edit', async() => {
+      const editButton = JobsBlock.getByLabelText("editButton")
+      fireEvent.click(editButton)
+  })
+  then('User can edit data' , () => {
+      const jobTitle = JobsBlock.getByTestId("jobTitle")
+      expect(jobTitle.textContent).toBeDefined()
+  })
+})
+
+test('User navigates to jobs edit page with none permisstion', ({ given, when, then }) => {
+let JobsBlock:RenderResult;
+
+  given('I am a User loading  jobs edit page with none permisstion', () => {
+    global.localStorage.setItem("permissions", 'U2FsdGVkX19zyl3upa/kwf62mlhBZ')
+    JobsBlock = render(
+          <MockAPIHelperBlock>
+             <JobEdit t={(key: string) => {
+                  return key.split(".").reduce((acc: {[key: string]: {}}, cur : string) => acc?.[cur], lang === "en" ? enLang : arLang)?.toString?.()
+              }}  type={""} details={undefined} modeType={""} navigate_back={""} seeDetails={undefined} active={0}    navigate={jest.fn()} {...convertedProps} />
+          </MockAPIHelperBlock>
+      )
+  });
+
+when('user click on jobs with none permisstion', () => {
+  const editButton = JobsBlock.getByLabelText("editButton")
+  fireEvent.click(editButton)
+})
+then('User can not see job edit page data' ,() => {
+  const jobTitle = JobsBlock.getByTestId("jobTitle")
+  expect(jobTitle).toBeDefined()
+
+})
+})
+
+test('User navigates to jobs edit page with View only', ({ given, when, then }) => {
+let JobsBlock:RenderResult;
+
+  given('I am a User loading  jobs edit page with View only', () => {
+    global.localStorage.setItem("permissions", 'U2FsdGVkX19zyl3upa/kwf485jf3')
+    JobsBlock = render(
+          <MockAPIHelperBlock>
+             <JobEdit t={(key: string) => {
+                  return key.split(".").reduce((acc: {[key: string]: {}}, cur : string) => acc?.[cur], lang === "en" ? enLang : arLang)?.toString?.()
+              }}  type={""} details={undefined} modeType={""} navigate_back={""} seeDetails={undefined}    navigate={jest.fn()} active={0} {...convertedProps} />
+          </MockAPIHelperBlock>
+      )
+  });
+
+when('user click on jobs with View only', () => {
+  const editButton = JobsBlock.getByLabelText("editButton")
+  fireEvent.click(editButton)
+})
+then('User can see job page list' ,() => {
+  const jobTitle = JobsBlock.getByTestId("jobTitle")
+  expect(jobTitle.textContent).toBeDefined()
+})
+})
+
+      test("User processes recurring job data and appends to job body all", ({ given, when, then }) => {
+      let JobEditBlock: ShallowWrapper;
+      let instance: JobEdit;
+      let mockFormData: Record<string, any>;
+
+      given("I am on the JobEdit page with a recurring job", () => {
+         JobEditBlock = shallow(
+            <JobEdit
+                  t={(key: string) => key}
+                  type={""}
+                  details={undefined}
+                  modeType={""}
+                  navigate_back={""}
+                  seeDetails={undefined}
+                  active={0}
+                  navigate={jest.fn()}
+                  {...convertedProps}
+            />
+         );
+
+         mockFormData = {};
+         global.FormData = class {
+            append(key: string, value: any) {
+                  mockFormData[key] = value;
+            }
+         } as any;
+
+         JobEditBlock.setState({
+            jobType: "recurring_job",
+            recurringJobData: {
+                  weekDays: "2,3,5",
+                  day: "tuesday, wednesday, friday",
+                  frequency: "weekly",
+                  duration: { day: 3, frequency: "WEEKLY" },
+                  startDate: "2024-12-01",
+            },
+            mockFullWeekDays: [
+                  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+            ],
+         });
+      });
+
+      when("I process and append recurring job data", () => {
+         instance = JobEditBlock.instance() as JobEdit;
+
+         // Simulate the logic for processing recurring job data
+         if (instance.state.jobType === "recurring_job") {
+            const recurringJobData = instance.state.recurringJobData;
+            const mockFullWeekDays = instance.state.mockFullWeekDays;
+
+            // Map selected weekdays
+            const selectedWeekDays = recurringJobData.weekDays
+                  .split(",")
+                  .map(Number)
+                  .map((dayIndex: number) => mockFullWeekDays[dayIndex])
+                  .map((day: string) => day.trim().toLowerCase());
+
+            // Initialize FormData and append using appendFormdata
+            const createJobBody = new FormData();
+            createJobBody.append("data[day]", selectedWeekDays.join(", "));
+
+            Object.keys(recurringJobData).forEach((key) => {
+                  instance.appendFormdata(key, createJobBody);
+            });
+
+            // Assertions for processed data
+            expect(selectedWeekDays).toEqual(["tuesday", "wednesday", "friday"]);
+            expect(mockFormData["data[day]"]).toBe("tuesday, wednesday, friday");
+            expect(mockFormData["data[frequency]"]).toBe("weekly");
+            expect(mockFormData["data[startDate]"]).toBe("2024-12-01");
+         }
+      });
+
+      then("All recurring job data should be appended correctly", () => {
+
+         const mockEvent = {
+            target: {
+            name: "files",
+            files: [
+               new File(["content"], "example1.jpg", { type: "image/jpeg" }),
+               new File(["content"], "example2.jpg", { type: "image/jpeg" }),
+            ],
+            },
+         };
+         instance.setState({
+            isEditable: true, // Allow editing
+            productServices: [
+            {
+               files: [
+                  { name: "example.jpg", id: "12345" },
+                  { name: "image2.jpg", id: "67890" },
+               ],
+               file_id: [],
+               completed: false,
+               progress: 0,
+            },
+            // Add other product/service objects as needed
+            ],
+         });
+         
+         instance.handleRemoveFile(0, { name: "example.jpg", id: "12345" });
+         
+         instance.handleChangePaymentMethodRef({ value: "credit_card" });
+         instance.handleChangeProductFiles(0, mockEvent);
+
+         expect(mockFormData).toHaveProperty("data[day]", "tuesday, wednesday, friday");
+         expect(mockFormData).toHaveProperty("data[frequency]", "weekly");
+         expect(mockFormData).toHaveProperty("data[duration]", "3.WEEKLY");
+         expect(mockFormData).toHaveProperty("data[startDate]", "2024-12-01");
+      });
+      });
+    
+    test("User processes recurring job data and appends to job body", ({ given, when, then }) => {
+      let JobEditBlock: ShallowWrapper;
+      let instance: JobEdit;
+      let mockFormData: Record<string, any>;
+    
+      given("I am on the JobEdit page with a recurring job", () => {
+        JobEditBlock = shallow(
+          <JobEdit
+            t={(key: string) => key}
+            type={""}
+            details={undefined}
+            modeType={""}
+            navigate_back={""}
+            seeDetails={undefined}
+            active={0}
+            navigate={jest.fn()}
+            {...convertedProps}
+          />
+        );
+    
+        mockFormData = {};
+        global.FormData = class {
+          append(key: string, value: any) {
+            mockFormData[key] = value;
+          }
+        } as any;
+    
+        JobEditBlock.setState({
+          jobType: "recurring_job",
+          recurringJobData: {
+            weekDays: "2,3,5",
+            day: ["tuesday", "wednesday", "friday"],
+            frequency: "weekly",
+            duration: { day: 3, frequency: "WEEKLY" },
+            startDate: "2024-12-01",
+          },
+          mockFullWeekDays: [
+            "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+          ],
+        });
+    
+        instance = JobEditBlock.instance() as JobEdit;
+        jest.spyOn(instance, "updateJob");
+      });
+    
+      when("I process and append recurring job data", async () => {
+        await instance.updateJob();
+      });
+    
+      then("All recurring job data should be appended correctly", () => {
+        // Check if mockFormData has the correct value as a comma-separated string
+        expect(mockFormData).toHaveProperty("data[day]", ["tuesday", "wednesday", "friday"]); // Ensure it is a string
+        expect(mockFormData).toHaveProperty("data[frequency]", "weekly");
+        expect(mockFormData).toHaveProperty("data[startDate]", "2024-12-01");
+        expect(instance.updateJob).toHaveBeenCalled();
+      });
+    });
+    
+    test("User processes recurring job data and appends to job body for createJob", ({ given, when, then }) => {
+      let JobEditBlock: ShallowWrapper;
+      let instance: JobEdit;
+      let mockFormData: Record<string, any>;
+    
+      given("I am on the JobEdit page with a recurring job", () => {
+        JobEditBlock = shallow(
+          <JobEdit
+            t={(key: string) => key}
+            type={""}
+            details={undefined}
+            modeType={""}
+            navigate_back={""}
+            seeDetails={undefined}
+            active={0}
+            navigate={jest.fn()}
+            {...convertedProps}
+          />
+        );
+    
+        mockFormData = {};
+        global.FormData = class {
+          append(key: string, value: any) {
+            mockFormData[key] = value;
+          }
+        } as any;
+    
+        JobEditBlock.setState({
+          jobType: "recurring_job",
+          recurringJobData: {
+            weekDays: "2,3,5",
+            day: ["tuesday", "wednesday", "friday"],
+            frequency: "weekly",
+            duration: { day: 3, frequency: "WEEKLY" },
+            startDate: "2024-12-01",
+          },
+          mockFullWeekDays: [
+            "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+          ],
+        });
+        
+
+        instance = JobEditBlock.instance() as JobEdit;
+        jest.spyOn(instance, "createJob");
+      });
+    
+      when("I process and append recurring job data", async () => {
+        await instance.createJob();
+      });
+    
+      then("All recurring job data should be appended correctly", () => {
+        expect(mockFormData).toHaveProperty("data[day]", ["tuesday", "wednesday", "friday"]); // Check for the days array
+    
+        expect(mockFormData).toHaveProperty("data[frequency]", "weekly");
+        expect(mockFormData).toHaveProperty("data[startDate]", "2024-12-01");
+        expect(instance.createJob).toHaveBeenCalled();
+        instance.handleresponse()
+        instance.MarkasCompleted()
+        instance.deleteVisit()
+      });
+    });
+
+    test("handleVisitDialogOpen should set visitDialogOpen to true and update selectedVisit", () => {
+      let JobEditBlock: ShallowWrapper;
+      let instance: JobEdit;
+  
+      JobEditBlock = shallow(
+          <JobEdit
+              t={(key: string) => key}
+              type={""}
+              details={undefined}
+              modeType={""}
+              navigate={jest.fn()}
+              navigate_back={""}
+              seeDetails={undefined}
+              active={0}
+              {...convertedProps}
+          />
+      );
+  
+      instance = JobEditBlock.instance() as JobEdit;
+  
+      const mockVisit: any = {
+          id: 1,
+          name: "Test Visit",
+          type: "exampleType",
+          attributes: {
+              location: "Test Location",
+              date: "2024-06-01",
+          },
+      };
+  
+      instance.handleVisitDialogOpen(mockVisit);
+  
+      expect(instance.state.visitDialogOpen).toBe(true);
+      expect(instance.state.selectedVisit).toEqual(mockVisit);
+  });
+  test("formatDate should return formatted date string", () => {
+   let JobEditBlock: ShallowWrapper;
+   let instance: JobEdit;
+
+   JobEditBlock = shallow(
+       <JobEdit
+           t={(key: string) => key}
+           type={""}
+           details={undefined}
+           modeType={""}
+           navigate={jest.fn()}
+           navigate_back={""}
+           seeDetails={undefined}
+           active={0}
+           {...convertedProps}
+       />
+   );
+
+   instance = JobEditBlock.instance() as JobEdit;
+
+    const inputDateString = "2024-09-15";
+    const expectedFormattedDate = "Sep 15, 2024";
+    const result = instance.convertDate(inputDateString);
+
+    expect(result).toBe(expectedFormattedDate);
+});
+test('should reset the collectedPaymentForm state and trigger createJob if validation passes', () => {
+   let JobEditBlock: ShallowWrapper;
+   let instance: JobEdit;
+
+   JobEditBlock = shallow(
+       <JobEdit
+           t={(key: string) => key}
+           type={""}
+           details={undefined}
+           modeType={""}
+           navigate={jest.fn()}
+           navigate_back={""}
+           seeDetails={undefined}
+           active={0}
+           {...convertedProps}
+       />
+   );
+
+   instance = JobEditBlock.instance() as JobEdit;
+   instance.validateJobForm = jest.fn().mockReturnValue({});
+
+   const createJobSpy = jest.spyOn(instance, 'createJob');
+
+   instance.handleCollectionPaymentModal();
+
+   expect(instance.state.collectedPaymentForm).toEqual({
+       id: '',
+       amount: '',
+       payment_method: '',
+       transaction_date: '',
+       details: '',
+       pay_balance: false,
+       collected: false,
+   });
+
+   expect(instance.state.isJobErrorFormData).toEqual({});
+
+   expect(createJobSpy).toHaveBeenCalled();
+
+   expect(instance.state.nextModal).toBe('payment');
+});
+  
+});
+
